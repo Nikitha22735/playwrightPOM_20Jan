@@ -33,8 +33,8 @@ class loginClass():
         self.continueBtn.click()
 
 
-    def enterPassword(self):
-         self.passwordTextBox.fill("Welcome@04")
+    def enterPassword(self, pw):
+         self.passwordTextBox.fill(pw)
 
     def clickOnLogInBtn(self):
        self.loginBtn.click()

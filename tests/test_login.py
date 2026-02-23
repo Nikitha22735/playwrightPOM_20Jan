@@ -1,5 +1,52 @@
+import csv
+import json
+
 from playwright.sync_api import Page, expect
 from pages.loginPage import loginClass
+from utils.handlingJsonData import readJsonData
+
+
+# def test_example_positive(page: Page, launchAmazon):
+#     page.wait_for_timeout(5000)
+#     login = loginClass(page)
+#     login.hoverOnAccountAndList()
+#     login.clickOnSigInBtn()
+#     login.enteruserName("trainingplaywright@gmail.com")
+#     login.clickOnContinueBtn()
+#     login.enterPassword()
+#     login.clickOnLogInBtn()
+
+# def test_example_negitive(page, launchAmazon):
+#     page.wait_for_timeout(5000)
+#     login = loginClass(page)
+#     login.hoverOnAccountAndList()
+#     login.clickOnSigInBtn()
+#     login.enteruserName("testing123")
+#     login.clickOnContinueBtn()
+#     login.validateUsernameErrorMessage()
+
+
+# def test_example_negitive12(page, launchAmazon):
+#     page.wait_for_timeout(5000)
+#     login = loginClass(page)
+#     login.hoverOnAccountAndList()
+#     login.clickOnSigInBtn()
+#     login.enteruserName("testing123")
+#     login.clickOnContinueBtn()
+#     login.validateUsernameErrorMessage()
+
+
+# def test_example_positive(page: Page, launchAmazon):
+#     page.wait_for_timeout(5000)
+#     login = loginClass(page)
+#     login.hoverOnAccountAndList()
+#     login.clickOnSigInBtn()
+#     credentials = readJsonData("testData\\credentials.json")
+#     print(credentials["positiveCredentials"]["username"])
+#     login.enteruserName(credentials["positiveCredentials"]["username"])
+#     login.clickOnContinueBtn()
+#     login.enterPassword(credentials["positiveCredentials"]["password"])
+#     login.clickOnLogInBtn()
 
 
 def test_example_positive(page: Page, launchAmazon):
@@ -7,26 +54,27 @@ def test_example_positive(page: Page, launchAmazon):
     login = loginClass(page)
     login.hoverOnAccountAndList()
     login.clickOnSigInBtn()
-    login.enteruserName("trainingplaywright@gmail.com")
-    login.clickOnContinueBtn()
-    login.enterPassword()
-    login.clickOnLogInBtn()
+    credentials = []
+    # with open("testData\\credentails.csv") as csvVariable:
+    #     data = csv.DictReader(csvVariable)
+        
+    #     for row in data:
+    #         credentials.append(row)
 
-def test_example_negitive(page, launchAmazon):
-    page.wait_for_timeout(5000)
-    login = loginClass(page)
-    login.hoverOnAccountAndList()
-    login.clickOnSigInBtn()
-    login.enteruserName("testing123")
-    login.clickOnContinueBtn()
-    login.validateUsernameErrorMessage()
+    # print(credentials)
+    # print(credentials[0]["username"])
 
-
-def test_example_negitive12(page, launchAmazon):
-    page.wait_for_timeout(5000)
-    login = loginClass(page)
-    login.hoverOnAccountAndList()
-    login.clickOnSigInBtn()
-    login.enteruserName("testing123")
-    login.clickOnContinueBtn()
-    login.validateUsernameErrorMessage()
+    with open("testData\\credentails.csv", mode="w") as csvVariable:
+        # data = csv.DictReader(csvVariable)
+        data = csv.DictWriter(csvVariable,fieldnames=["username","password"])
+        # data.writeheader(zip({"username","password"}))
+        data.writeheader({"username","password"})
+        data.writerow({"username": "22trainingplaywright@gmail.com", "password": "Welcome@04"})
+        
+        # for row in data:
+        #     credentials.append(row)
+    # print(credentials["positiveCredentials"]["username"])
+    # login.enteruserName(credentials["positiveCredentials"]["username"])
+    # login.clickOnContinueBtn()
+    # login.enterPassword(credentials["positiveCredentials"]["password"])
+    # login.clickOnLogInBtn()
