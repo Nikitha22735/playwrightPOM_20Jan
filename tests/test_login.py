@@ -65,16 +65,7 @@ def test_example_positive(page: Page, launchAmazon):
     # print(credentials[0]["username"])
 
     with open("testData\\credentails.csv", mode="w") as csvVariable:
-        # data = csv.DictReader(csvVariable)
         data = csv.DictWriter(csvVariable,fieldnames=["username","password"])
-        # data.writeheader(zip({"username","password"}))
-        data.writeheader({"username","password"})
+        data.writeheader()
         data.writerow({"username": "22trainingplaywright@gmail.com", "password": "Welcome@04"})
         
-        # for row in data:
-        #     credentials.append(row)
-    # print(credentials["positiveCredentials"]["username"])
-    # login.enteruserName(credentials["positiveCredentials"]["username"])
-    # login.clickOnContinueBtn()
-    # login.enterPassword(credentials["positiveCredentials"]["password"])
-    # login.clickOnLogInBtn()

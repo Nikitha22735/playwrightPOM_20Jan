@@ -4,10 +4,11 @@ import pytest
 from pages.homePage import homePageClass
 from pages.resultsPage import resultsPageClass
 
-# @pytest.mark.results()
-def test_validateNavigationToResultsScreen(page, loginToAmazon):
-    homePage = homePageClass(page)
-    resultsPage =resultsPageClass(page)
+@pytest.mark.login()
+def test_validateNavigationToResultsScreen(page, loginToAmazon, resultsPage,homePage):
+    # homePage = homePageClass(page)
+    # resultsPage =resultsPageClass(page)
+    # resultsPage,homePage = commonObj
     homePage.enterProductInTheSearchBox("iphone")
     homePage.clickOnSearchBtn()
     resultsPage.validateTheVisibilityOfResultsText()

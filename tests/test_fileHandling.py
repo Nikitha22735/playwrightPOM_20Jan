@@ -1,0 +1,80 @@
+import csv
+import json
+import os
+
+from dotenv import load_dotenv
+from playwright.sync_api import Page, expect
+import pytest
+from pages.loginPage import loginClass
+from utils.handlingCSV import readCSV
+from utils.handlingJsonData import readJsonData
+
+
+
+
+def test_example_JsonHandling(page: Page, launchAmazon):
+    page.wait_for_timeout(5000)
+    login = loginClass(page)
+    login.hoverOnAccountAndList()
+    login.clickOnSigInBtn()
+    credentials = readJsonData("testData\\credentials.json")
+    print(credentials["positiveCredentials"]["username"])
+    login.enteruserName(credentials["positiveCredentials"]["username"])
+    login.clickOnContinueBtn()
+    login.enterPassword(credentials["positiveCredentials"]["password"])
+    login.clickOnLogInBtn()
+
+
+
+def test_example_readingCSVFile(page: Page, launchAmazon):
+    page.wait_for_timeout(5000)
+    login = loginClass(page)
+    login.hoverOnAccountAndList()
+    login.clickOnSigInBtn()
+    credentials = []
+    credentials = readCSV("testData\\credentails.csv")
+    print(credentials)
+    print(credentials[0]["username"])
+
+
+def test_example_cml(page: Page, launchAmazon):
+    page.wait_for_timeout(5000)
+    login = loginClass(page)
+    login.hoverOnAccountAndList()
+    login.clickOnSigInBtn()
+    login.enteruserName(os.getenv("usname"))
+    login.clickOnContinueBtn()
+    login.enterPassword(os.getenv("pw"))
+    login.clickOnLogInBtn()
+
+# @pytest.mark.env()
+def test_example_envFile(page: Page, launchAmazon):
+    page.wait_for_timeout(5000)
+    login = loginClass(page)
+    login.hoverOnAccountAndList()
+    login.clickOnSigInBtn()
+    load_dotenv(".env")
+    login.enteruserName(os.getenv("usname"))
+    login.clickOnContinueBtn()
+    login.enterPassword(os.getenv("pw"))
+    login.clickOnLogInBtn()
+
+
+@pytest.mark.env()
+# @pytest.mark.parametrize("env",[".env.dev",".env.test",".env.prod"])
+def test_example_envFile(page: Page, launchAmazon):
+    page.wait_for_timeout(5000)
+    login = loginClass(page)
+    login.hoverOnAccountAndList()
+    login.clickOnSigInBtn()
+    # env = os.getenv("env")
+    # load_dotenv(f".env.{env}")
+    load_dotenv(os.getenv("env", ".env.dev"))
+    # print(env)
+    # load_dotenv(env)
+    print("=============================")
+    print(os.getenv("url"))
+    print(os.getenv("usname"))
+    print(os.getenv("pw"))
+
+
