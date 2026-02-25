@@ -3,6 +3,7 @@ import json
 import os
 
 from dotenv import load_dotenv
+from openpyxl import load_workbook
 from playwright.sync_api import Page, expect
 import pytest
 from pages.loginPage import loginClass
@@ -60,7 +61,8 @@ def test_example_envFile(page: Page, launchAmazon):
     login.clickOnLogInBtn()
 
 
-@pytest.mark.env()
+
+
 # @pytest.mark.parametrize("env",[".env.dev",".env.test",".env.prod"])
 def test_example_envFile(page: Page, launchAmazon):
     page.wait_for_timeout(5000)
@@ -76,5 +78,23 @@ def test_example_envFile(page: Page, launchAmazon):
     print(os.getenv("url"))
     print(os.getenv("usname"))
     print(os.getenv("pw"))
+
+@pytest.mark.env()
+ # pip install openpyxl
+def test_example_excelFile():
+    workbook = load_workbook("testData\\searchProduct.xlsx")
+    sheetValues = workbook["phoneConfigs"]
+    # data = []
+    # for row in sheetValues.iter_cols(min_col=1,max_col=2,values_only=True):
+    #     data.append(row)
+
+
+    print(sheetValues["A5"].value)
+
+   
+
+
+
+
 
 
