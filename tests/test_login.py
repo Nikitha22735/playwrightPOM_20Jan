@@ -1,20 +1,22 @@
 import csv
 import json
+import pytest
 
 from playwright.sync_api import Page, expect
 from pages.loginPage import loginClass
 from utils.handlingJsonData import readJsonData
 
-
-# def test_example_positive(page: Page, launchAmazon):
-#     page.wait_for_timeout(5000)
-#     login = loginClass(page)
-#     login.hoverOnAccountAndList()
-#     login.clickOnSigInBtn()
-#     login.enteruserName("trainingplaywright@gmail.com")
-#     login.clickOnContinueBtn()
-#     login.enterPassword()
-#     login.clickOnLogInBtn()
+@pytest.mark.login()
+def test_example_positive(page: Page, launchAmazon):
+    page.wait_for_timeout(5000)
+    login = loginClass(page)
+    login.hoverOnAccountAndList()
+    login.clickOnSigInBtn()
+    login.enteruserName("trainingplaywright@gmail.com")
+    login.clickOnLogInBtn()
+    login.clickOnContinueBtn()
+    login.enterPassword("Welcome@04")
+    login.clickOnLogInBtn()
 
 # def test_example_negitive(page, launchAmazon):
 #     page.wait_for_timeout(5000)
