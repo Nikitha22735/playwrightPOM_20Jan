@@ -1,6 +1,7 @@
 import os
 
 import pytest
+import allure
 from playwright.sync_api import Page, expect, sync_playwright
 
 from pages.homePage import homePageClass
@@ -11,12 +12,8 @@ from pages.resultsPage import resultsPageClass
 @pytest.fixture()
 # @pytest.mark.parametrize("browserValue",["firefox","chromium"] )
 def page():
-    browserValue = os.getenv("browser","chromium")
     with sync_playwright() as p:
-        if browserValue=="firefox":
-            browser = p.firefox.launch(headless=False)
-        if browserValue=="chromium":
-            browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=False)
         context = browser.new_context(viewport={"width": 1850,"height":2000})
         page = context.new_page()
         yield page
@@ -35,13 +32,13 @@ def loginToAmazon(page):
     login = loginClass(page)
     login.hoverOnAccountAndList()
     login.clickOnSigInBtn()
-    # login.enteruserName("trainingplaywright@gmail.com")
+    login.enteruserName("trainingplaywright@gmail.com")
     # username = os.getenv("usname")
     # pw = os.getenv("pwrd")
-    login.enteruserName(os.getenv("usname"))
+    # login.enteruserName(os.getenv("usname"))
     login.clickOnContinueBtn()
-    # login.enterPassword("Welcome@04")
-    login.enterPassword(os.getenv("pwrd"))
+    login.enterPassword("Welcome@04")
+    # login.enterPassword(os.getenv("pwrd"))
     login.clickOnLogInBtn()
 
 @pytest.fixture()
@@ -52,7 +49,7 @@ def resultsPage(page):
 @pytest.fixture()
 def homePage(page):
     homePage = homePageClass(page)
-    return 
+    return homePage
 
 
 
@@ -62,3 +59,33 @@ def commonObj(page):
     homePage = homePageClass(page)
     return resultsPage,homePage
 
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """
+    Capture screenshot when a test fails
+    """
+    outcome = yield
+    rep = outcome.get_result()
+    
+    if rep.failed and call.when == "call":
+        try:
+            # Get the page fixture if it exists
+            page = item.funcargs.get("page")
+            if page:
+                # Take screenshot
+                screenshot_path = f"screenshot_{item.name}.png"
+                page.screenshot(path=screenshot_path)
+                
+                # Attach to Allure report
+                allure.attach.file(
+                    screenshot_path,
+                    name=f"Screenshot - {item.name}",
+                    attachment_type=allure.attachment_type.PNG
+                )
+                
+                # Clean up screenshot file
+                if os.path.exists(screenshot_path):
+                    os.remove(screenshot_path)
+        except Exception as e:
+            print(f"Failed to capture screenshot: {e}")

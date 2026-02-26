@@ -12,7 +12,7 @@ from utils.handlingJsonData import readJsonData
 
 
 
-
+@pytest.mark.login()
 def test_example_JsonHandling(page: Page, launchAmazon):
     page.wait_for_timeout(5000)
     login = loginClass(page)
@@ -48,7 +48,8 @@ def test_example_cml(page: Page, launchAmazon):
     login.enterPassword(os.getenv("pw"))
     login.clickOnLogInBtn()
 
-# @pytest.mark.env()
+
+@pytest.mark.login()
 def test_example_envFile(page: Page, launchAmazon):
     page.wait_for_timeout(5000)
     login = loginClass(page)
@@ -69,15 +70,15 @@ def test_example_envFile(page: Page, launchAmazon):
     login = loginClass(page)
     login.hoverOnAccountAndList()
     login.clickOnSigInBtn()
-    # env = os.getenv("env")
+    env = os.getenv("env")
     # load_dotenv(f".env.{env}")
     load_dotenv(os.getenv("env", ".env.dev"))
     # print(env)
     # load_dotenv(env)
     print("=============================")
-    print(os.getenv("url"))
-    print(os.getenv("usname"))
-    print(os.getenv("pw"))
+    print(os.getenv("url", "https://www.amazon.in/?"))
+    print(os.getenv("usname","trainingplaywright@gmail.com"))
+    login.enterPassword("Welcome@04")
 
 @pytest.mark.env()
  # pip install openpyxl
@@ -90,6 +91,7 @@ def test_example_excelFile():
 
 
     print(sheetValues["A5"].value)
+    
 
    
 

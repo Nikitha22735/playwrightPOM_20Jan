@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>report2.html</title>
+    <link href="assets/style.css" rel="stylesheet" type="text/css"/></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    let visibleString = getQueryParameter('visible') || 'all';
+    visibleString = visibleString.toLowerCase();
+    const checkedItems = visibleString.split(',');
+
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++) {
+        filterItems[i].hidden = false;
+
+        if (visibleString != 'all') {
+            filterItems[i].checked = checkedItems.includes(filterItems[i].getAttribute('data-test-result'));
+            filterTable(filterItems[i]);
+        }
+    }
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>report2.html</h1>
+    <p>Report generated on 26-Feb-2026 at 20:36:42 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.2.0</p>
+    <h2>Summary</h2>
+    <p>7 tests ran in 94.56 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">3 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">4 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>, <input checked="true" class="filter" data-test-result="rerun" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="rerun">0 rerun</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable" col="duration">Duration</th>
+          <th class="sortable links" col="links">Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">tests/test_fileHandling.py::test_example_envFile</td>
+          <td class="col-duration">81.02</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">[gw3] win32 -- Python 3.10.0 C:\python\python.exe<br/>[gw3] win32 -- Python 3.10.0 C:\python\python.exe[gw3] win32 -- Python 3.10.0 C:\python\python.exe<br/><br/>page = &lt;Page url=&#x27;https://www.amazon.in/ap/signin?openid.pape.max_auth_age=0&amp;openid.return_to=https%3A%2F%2Fwww.amazon.in%2F%...d=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&amp;openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&#x27;&gt;<br/>launchAmazon = None<br/><br/>    def test_example_envFile(page: Page, launchAmazon):<br/>        page.wait_for_timeout(5000)<br/>        login = loginClass(page)<br/>        login.hoverOnAccountAndList()<br/>        login.clickOnSigInBtn()<br/>        env = os.getenv(&quot;env&quot;)<br/>        # load_dotenv(f&quot;.env.{env}&quot;)<br/>        load_dotenv(os.getenv(&quot;env&quot;, &quot;.env.dev&quot;))<br/>        # print(env)<br/>        # load_dotenv(env)<br/>        print(&quot;=============================&quot;)<br/>        print(os.getenv(&quot;url&quot;, &quot;https://www.amazon.in/?&quot;))<br/>        print(os.getenv(&quot;usname&quot;,&quot;trainingplaywright@gmail.com&quot;))<br/>&gt;       login.enterPassword(&quot;Welcome@04&quot;)<br/><br/>tests\test_fileHandling.py:80: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>pages\loginPage.py:37: in enterPassword<br/>    self.passwordTextBox.fill(pw)<br/>C:\python\lib\site-packages\playwright\sync_api\_generated.py:15889: in fill<br/>    self._sync(<br/>C:\python\lib\site-packages\playwright\_impl\_locator.py:212: in fill<br/>    return await self._frame.fill(self._selector, strict=True, **params)<br/>C:\python\lib\site-packages\playwright\_impl\_frame.py:590: in fill<br/>    await self._fill(**locals_to_params(locals()))<br/>C:\python\lib\site-packages\playwright\_impl\_frame.py:602: in _fill<br/>    await self._channel.send(&quot;fill&quot;, self._timeout, locals_to_params(locals()))<br/>C:\python\lib\site-packages\playwright\_impl\_connection.py:69: in send<br/>    return await self._connection.wrap_api_call(<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = &lt;playwright._impl._connection.Connection object at 0x000002585B1EF100&gt;<br/>cb = &lt;function Channel.send.&lt;locals&gt;.&lt;lambda&gt; at 0x000002585B512EF0&gt;, is_internal = False, title = None<br/><br/>    async def wrap_api_call(<br/>        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None<br/>    ) -&gt; Any:<br/>        if self._api_zone.get():<br/>            return await cb()<br/>        task = asyncio.current_task(self._loop)<br/>        st: List[inspect.FrameInfo] = getattr(<br/>            task, &quot;__pw_stack__&quot;, None<br/>        ) or inspect.stack(0)<br/>    <br/>        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)<br/>        self._api_zone.set(parsed_st)<br/>        try:<br/>            return await cb()<br/>        except Exception as error:<br/>&gt;           raise rewrite_error(error, f&quot;{parsed_st[&#x27;apiName&#x27;]}: {error}&quot;) from None<br/><span class="error">E           playwright._impl._errors.TimeoutError: Locator.fill: Timeout 30000ms exceeded.</span><br/><span class="error">E           Call log:</span><br/><span class="error">E             - waiting for get_by_role(&quot;textbox&quot;, name=&quot;Password&quot;)</span><br/><br/>C:\python\lib\site-packages\playwright\_impl\_connection.py:558: TimeoutError[gw3] win32 -- Python 3.10.0 C:\python\python.exe<br/> ------------------------------Captured stdout call------------------------------ <br/>=============================
+devURL
+111trainingplaywright@gmail.com
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">tests/test_fileHandling.py::test_example_readingCSVFile</td>
+          <td class="col-duration">71.27</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">[gw1] win32 -- Python 3.10.0 C:\python\python.exe<br/>[gw1] win32 -- Python 3.10.0 C:\python\python.exe[gw1] win32 -- Python 3.10.0 C:\python\python.exe<br/><br/>page = &lt;Page url=&#x27;https://www.amazon.in/ap/signin?openid.pape.max_auth_age=0&amp;openid.return_to=https%3A%2F%2Fwww.amazon.in%2F%...d=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&amp;openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&#x27;&gt;<br/>launchAmazon = None<br/><br/>    def test_example_readingCSVFile(page: Page, launchAmazon):<br/>        page.wait_for_timeout(5000)<br/>        login = loginClass(page)<br/>        login.hoverOnAccountAndList()<br/>        login.clickOnSigInBtn()<br/>        credentials = []<br/>        credentials = readCSV(&quot;testData\\credentails.csv&quot;)<br/>        print(credentials)<br/>&gt;       print(credentials[0][&quot;username&quot;])<br/><span class="error">E       IndexError: list index out of range</span><br/><br/>tests\test_fileHandling.py:38: IndexError[gw1] win32 -- Python 3.10.0 C:\python\python.exe<br/> ------------------------------Captured stdout call------------------------------ <br/>[]
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">tests/test_fileHandling.py::test_example_cml</td>
+          <td class="col-duration">71.75</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">[gw2] win32 -- Python 3.10.0 C:\python\python.exe<br/>[gw2] win32 -- Python 3.10.0 C:\python\python.exe[gw2] win32 -- Python 3.10.0 C:\python\python.exe<br/><br/>page = &lt;Page url=&#x27;https://www.amazon.in/ap/signin?openid.pape.max_auth_age=0&amp;openid.return_to=https%3A%2F%2Fwww.amazon.in%2F%...d=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&amp;openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&#x27;&gt;<br/>launchAmazon = None<br/><br/>    def test_example_cml(page: Page, launchAmazon):<br/>        page.wait_for_timeout(5000)<br/>        login = loginClass(page)<br/>        login.hoverOnAccountAndList()<br/>        login.clickOnSigInBtn()<br/>&gt;       login.enteruserName(os.getenv(&quot;usname&quot;))<br/><br/>tests\test_fileHandling.py:46: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>pages\loginPage.py:29: in enteruserName<br/>    self.userNameTextBox.fill(username)<br/>C:\python\lib\site-packages\playwright\sync_api\_generated.py:15889: in fill<br/>    self._sync(<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = &lt;Locator frame=&lt;Frame name= url=&#x27;https://www.amazon.in/ap/signin?openid.pape.max_auth_age=0&amp;openid.return_to=https%3A%...ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&#x27;&gt; selector=&#x27;internal:role=textbox[name=&quot;Enter mobile number or email&quot;i]&#x27;&gt;<br/>value = None, timeout = None, noWaitAfter = None, force = None<br/><br/>    async def fill(<br/>        self,<br/>        value: str,<br/>        timeout: float = None,<br/>        noWaitAfter: bool = None,<br/>        force: bool = None,<br/>    ) -&gt; None:<br/>        params = locals_to_params(locals())<br/>&gt;       return await self._frame.fill(self._selector, strict=True, **params)<br/><span class="error">E       TypeError: Frame.fill() missing 1 required positional argument: &#x27;value&#x27;</span><br/><br/>C:\python\lib\site-packages\playwright\_impl\_locator.py:212: TypeError[gw2] win32 -- Python 3.10.0 C:\python\python.exe<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">tests/test_resultsPage.py::test_validateNavigationToResultsScreen</td>
+          <td class="col-duration">14.22</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">[gw0] win32 -- Python 3.10.0 C:\python\python.exe<br/>[gw0] win32 -- Python 3.10.0 C:\python\python.exe[gw0] win32 -- Python 3.10.0 C:\python\python.exe<br/><br/>page = &lt;Page url=&#x27;https://www.amazon.in/ax/claim?openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&amp;arb=87a72e89-566c-472b-...de=checkid_setup&amp;policy_handle=Retail-Checkout&amp;openid.return_to=https%3A%2F%2Fwww.amazon.in%2F%3F%26ref_%3Dnav_signin&#x27;&gt;<br/>loginToAmazon = None, resultsPage = &lt;pages.resultsPage.resultsPageClass object at 0x000001D38DCE3B20&gt;, homePage = None<br/><br/>    @pytest.mark.login()<br/>    def test_validateNavigationToResultsScreen(page, loginToAmazon, resultsPage,homePage):<br/>        # homePage = homePageClass(page)<br/>        # resultsPage =resultsPageClass(page)<br/>        # resultsPage,homePage = commonObj<br/>&gt;       homePage.enterProductInTheSearchBox(&quot;iphone&quot;)<br/><span class="error">E       AttributeError: &#x27;NoneType&#x27; object has no attribute &#x27;enterProductInTheSearchBox&#x27;</span><br/><br/>tests\test_resultsPage.py:12: AttributeError[gw0] win32 -- Python 3.10.0 C:\python\python.exe<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">tests/test_fileHandling.py::test_example_excelFile</td>
+          <td class="col-duration">0.05</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">[gw4] win32 -- Python 3.10.0 C:\python\python.exe<br/>[gw4] win32 -- Python 3.10.0 C:\python\python.exe[gw4] win32 -- Python 3.10.0 C:\python\python.exe[gw4] win32 -- Python 3.10.0 C:\python\python.exe<br/> ------------------------------Captured stdout call------------------------------ <br/>testing
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">tests/test_fileHandling.py::test_example_JsonHandling</td>
+          <td class="col-duration">73.77</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">[gw0] win32 -- Python 3.10.0 C:\python\python.exe<br/>[gw0] win32 -- Python 3.10.0 C:\python\python.exe[gw0] win32 -- Python 3.10.0 C:\python\python.exe[gw0] win32 -- Python 3.10.0 C:\python\python.exe<br/> ------------------------------Captured stdout call------------------------------ <br/>trainingplaywright@gmail.com
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">tests/test_login.py::test_example_positive</td>
+          <td class="col-duration">69.65</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">[gw5] win32 -- Python 3.10.0 C:\python\python.exe<br/>[gw5] win32 -- Python 3.10.0 C:\python\python.exe[gw5] win32 -- Python 3.10.0 C:\python\python.exe[gw5] win32 -- Python 3.10.0 C:\python\python.exe<br/></div></td></tr></tbody></table></body></html>

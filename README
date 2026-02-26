@@ -1,0 +1,21 @@
+# POM(design pattern):
+
+
+# 1. pages:  store locators and Methods
+# 2. tests: store testcases  using pytest
+# 3. conftest: store fixtures and hooks
+# 4. testData: to store the testData
+# 5. utils: for common methods
+# 6. pytest.ini
+
+
+# 7. requirements.txt
+# 8. reports:  HTML and ALLure
+
+
+# 9. .yml (CICD pipeline)
+
+
+
+# Allure:
+# execution command: pytest -m login --alluredir=allureResults

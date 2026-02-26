@@ -5,7 +5,6 @@ class homePageClass():
         self.searchBoxTextField = page.locator("input#twotabsearchtextbox")
         self.searchBtn = page.locator("input#nav-search-submit-button")
 
-
     def enterProductInTheSearchBox(self,product):
          self.searchBoxTextField.fill(product)
 
