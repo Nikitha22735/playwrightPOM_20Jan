@@ -1,6 +1,8 @@
+import allure
 from playwright.sync_api import Page, expect
+from allureWraper import BasePage
 
-class loginClass():
+class loginClass(BasePage):
     # accountsAndListBtn = page.locator("//span[contains(text(),'Account & Lists')]")
     def __init__(self, page):
         self.accountsAndListBtn = page.locator("//span[contains(text(),'Account & Lists')]")
@@ -11,14 +13,16 @@ class loginClass():
         self.loginBtn = page.get_by_role("button", name="Sign in")
         self.invalidEmailErrorMesg = page.locator("//*[contains(text(),'Invalid email address')]")
 
-
+    @allure.step("Hover on Account and List")
     def hoverOnAccountAndList(self):
-       self.accountsAndListBtn.hover()
+    #    self.accountsAndListBtn.hover()
+        self.accountsAndListBtn.click()
 
+    @allure.step("clickOnAccountAndList")
     def clickOnAccountAndList(self):
         self.accountsAndListBtn.click()
 
-
+    @allure.step("validateTheVisibilityOfAccountAndList")
     def validateTheVisibilityOfAccountAndList(self):
         expect(self.accountsAndListBtn).to_be_visible()
 

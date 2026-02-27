@@ -11,7 +11,7 @@ def test_example_positive(page: Page, launchAmazon):
     page.wait_for_timeout(5000)
     login = loginClass(page)
     login.hoverOnAccountAndList()
-    login.clickOnSigInBtn()
+    # login.clickOnSigInBtn()
     login.enteruserName("trainingplaywright@gmail.com")
     login.clickOnLogInBtn()
     login.clickOnContinueBtn()
@@ -55,7 +55,7 @@ def test_example_positive(page: Page, launchAmazon):
     page.wait_for_timeout(5000)
     login = loginClass(page)
     login.hoverOnAccountAndList()
-    login.clickOnSigInBtn()
+    # login.clickOnSigInBtn()
     credentials = []
     # with open("testData\\credentails.csv") as csvVariable:
     #     data = csv.DictReader(csvVariable)
