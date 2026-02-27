@@ -11,3 +11,6 @@ class homePageClass():
 
     def clickOnSearchBtn(self):
         self.searchBtn.click()
+
+
+    # def validateTheSearchBoxText(self, expectedText):

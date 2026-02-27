@@ -4,7 +4,7 @@ import pytest
 from pages.homePage import homePageClass
 from pages.resultsPage import resultsPageClass
 
-@pytest.mark.login()
+# @pytest.mark.login()
 def test_validateNavigationToResultsScreen(page, loginToAmazon, resultsPage,homePage):
     # homePage = homePageClass(page)
     # resultsPage =resultsPageClass(page)
