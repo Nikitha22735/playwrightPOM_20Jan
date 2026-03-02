@@ -63,8 +63,8 @@ def pytest_sessionfinish(session, exitstatus):
 # @pytest.mark.parametrize("browserValue",["firefox","chromium"] )
 def page():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context(viewport={"width": 1850,"height":2000})
+        browser = p.chromium.launch()
+        context = browser.new_context()
         page = context.new_page()
         yield page
 

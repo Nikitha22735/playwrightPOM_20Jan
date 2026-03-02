@@ -1,0 +1,69 @@
+name: Playwright using Python Automation
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+        -name: checkout repository
+        uses: actions/checkout@v4
+
+        -name: set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3:10"
+
+        -name: Install dependency
+        run: |
+            pip install -r requirements.txt
+            pip install allure-pytest
+            playwright install --with-deps
+
+        -name: run testcases
+        run: |
+            pytest -n 6 \
+              --alluredir=allure-results
+        continue-on-error: true
+
+        -name: verify Allure results
+        if: always()
+        run: |
+          echo "listing allure-results contents:"
+          ls -la allure-results || echo "No allure-results directory found"
+
+        -name: Installing Allure
+        if: always()
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip wget
+          wget https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.zip
+          unzip allure-2.27.0.zip
+          sudo mv allure-2.27.0 /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+          allure --version
+
+        -name: Generate Allure Report
+        if: always()
+        run: |
+          allure generate allure-results --clean -o allure-report || echo "Failed to generate Allure report"
+
+        -name: Publish Allure Report
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./allure-report
+
+
+
+
+
+

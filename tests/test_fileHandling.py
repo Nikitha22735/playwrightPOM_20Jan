@@ -12,7 +12,7 @@ from utils.handlingJsonData import readJsonData
 
 
 
-@pytest.mark.login()
+# @pytest.mark.login()
 def test_example_JsonHandling(page: Page, launchAmazon):
     page.wait_for_timeout(5000)
     login = loginClass(page)
@@ -38,7 +38,7 @@ def test_example_readingCSVFile(page: Page, launchAmazon):
     print(credentials[0]["username"])
 
 
-def test_example_cml(page: Page, launchAmazon):
+def example_cml(page: Page, launchAmazon):
     page.wait_for_timeout(5000)
     login = loginClass(page)
     login.hoverOnAccountAndList()
@@ -49,7 +49,7 @@ def test_example_cml(page: Page, launchAmazon):
     login.clickOnLogInBtn()
 
 
-def test_example_envFile(page: Page, launchAmazon):
+def example_envFile(page: Page, launchAmazon):
     page.wait_for_timeout(5000)
     login = loginClass(page)
     login.hoverOnAccountAndList()
@@ -79,9 +79,9 @@ def test_example_envFile(page: Page, launchAmazon):
     print(os.getenv("usname","trainingplaywright@gmail.com"))
     login.enterPassword("Welcome@04")
 
-@pytest.mark.env()
+# @pytest.mark.env()
  # pip install openpyxl
-def test_example_excelFile():
+def example_excelFile():
     workbook = load_workbook("testData\\searchProduct.xlsx")
     sheetValues = workbook["phoneConfigs"]
     # data = []
