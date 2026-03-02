@@ -7,6 +7,9 @@ on:
 
   pull_request:
   workflow_dispatch:
+  Schedule:
+    - cron: "30 22 * * 0" # Runs daily at midnight
+            #minutes hours dayOfMonth month dayOfWeek
 
 
 jobs:
@@ -35,7 +38,7 @@ jobs:
       # 4️⃣ Run Playwright tests (parallel, keep artifacts)
       - name: Run Playwright Tests
         run: |
-          pytest -n 6 \
+          pytest -n 6  \
             --alluredir=allure-results \
             --capture=tee-sys
         continue-on-error: true
